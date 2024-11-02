@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #menu {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00ff9d;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 2rem;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: 2px solid #00ff9d;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(0, 255, 157, 0.4),
+                transparent
+            );
+            transition: all 0.5s;
+        }
+
+        button:hover:before {
+            left: 100%;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 157, 0.1);
+            box-shadow: 0 0 20px #00ff9d;
+            transform: scale(1.05);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ff9d;
+            }
+            to {
+                text-shadow: 0 0 20px #00ff9d, 0 0 30px #00ff9d;
+            }
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: #00ff9d;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid transparent;
+            border-top-color: #00ff9d;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #error-message {
+            color: #ff4444;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="loading-spinner"></div>
+        Loading 3D Model...
+        <div id="error-message"></div>
+    </div>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="menu">
+        <h1>Brain Game</h1>
+        <div class="button-container">
+            <button id="playButton">Play</button>
+            <button id="howToPlayButton">How to Play</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js",
+            "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+        let brain;
+        let animationFrameId;
+
+        function init() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.querySelector('#gameCanvas'),
+                antialias: true,
+                alpha: true
+            });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            camera.position.z = 5;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0x00ff9d, 1);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            const loader = new GLTFLoader();
+            try {
+                loader.load(
+                    'assets/Brain.glb',
+                    (gltf) => {
+                        brain = gltf.scene;
+                        brain.scale.set(1, 1, 1);
+                        scene.add(brain);
+                        document.getElementById('loading').style.display = 'none';
+                    },
+                    (xhr) => {
+                        const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
+                        document.getElementById('loading').textContent = `Loading: ${percent}%`;
+                    },
+                    (error) => {
+                        console.error('Error loading model:', error);
+                        showError('Failed to load 3D model. Please refresh the page.');
+                    }
+                );
+            } catch (error) {
+                console.error('Error in model loading setup:', error);
+                showError('An unexpected error occurred. Please refresh the page.');
+            }
+
+            function animate() {
+                animationFrameId = requestAnimationFrame(animate);
+
+                if (brain) {
+                    brain.rotation.y += 0.005;
+                    brain.rotation.x += 0.002;
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            return () => {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                renderer.dispose();
+            };
+        }
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            document.querySelector('.loading-spinner').style.display = 'none';
+        }
+
+        const cleanup = init();
+
+        document.getElementById('playButton').addEventListener('click', () => {
+            window.location.href = 'play.html';
+        });
+
+        document.getElementById('howToPlayButton').addEventListener('click', () => {
+            alert('Testez vos réflexes neuronaux !\n\n' +
+                  'Dans ce jeu, vous observez un réseau de neurones en action. Des points verts apparaissent aléatoirement dans le cerveau. \n' +
+                  'Cliquez le plus rapidement possible sur ces points lumineux pour marquer des points. Plus vous êtes rapide, plus votre score augmente !\n' +
+                  'Soyez attentif et vif!\n\n' +
+                  'Prêt à tester vos réflexes ?');
+        });
+
+        window.addEventListener('unload', cleanup);
+    </script>
+</body>
+</html>
