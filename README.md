@@ -9,6 +9,7 @@
 - [Déroulé du jeu](#déroulé-du-jeu)
 - [Technologies utilisées](#technologies-utilisées)
 - [Améliorations possibles](#améliorations-possibles)
+- [Créateurs](#créateurs)
 - [Crédits](#crédits)
 
 ## À propos du projet
@@ -32,8 +33,10 @@ Accéder à ce lien et vous pourrez immédiatement jouer :
 - Démarrez la partie en cliquant sur le bouton Commencer le jeu.
 - Un point sur le modèle de cerveau deviendra vert de façon aléatoire.
 - Cliquez sur ce point vert aussi vite que possible pour gagner des points.
+![The game](assets/Brainwashed.png)
 - Le point changera de position après chaque clic réussi, alors continuez de cliquer sur les nouveaux points verts jusqu’à la fin du compte à rebours.
 - Quand le temps est écoulé, votre score final est affiché, et vous pouvez recommencer une nouvelle partie.
+![Game Over](assets/image.png)
 
 ## Technologies utilisées
 
@@ -46,6 +49,11 @@ Accéder à ce lien et vous pourrez immédiatement jouer :
 - Niveaux de difficulté : Ajouter différents niveaux de difficulté avec des vitesses et des tailles de points variées.
 - Ajout de niveau : Ajouter des niveaux autre que le cerveau afin d'avoir plus ou moins de points.
 - Bonus multiplicateur : Récompenser les clics réussis à la suite avec des scores bonus ou un multiplicateur.
+
+## Créateurs
+
+- Charles Zhang (Interface, Codrops, Effet sonore)
+- Denis Adde (Gameplay, readme)
 
 ## Crédits
 
