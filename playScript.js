@@ -282,6 +282,32 @@ function onMouseClick(event) {
     }
 }
 
+window.addEventListener('touchstart', onTouchStart);
+
+function onTouchStart(event) {
+    if (!gameActive) return;
+
+    const raycaster = new THREE.Raycaster();
+    const touch = event.touches[0];
+    const mouse = new THREE.Vector2();
+
+    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const collisionSphere = scene.getObjectByName('greenPointCollider');
+    if (collisionSphere) {
+        const intersects = raycaster.intersectObject(collisionSphere);
+        if (intersects.length > 0) {
+            score++;
+            scoreDisplay.innerHTML = `Score: ${score}`;
+            updateGreenPoint();
+        }
+    }
+}
+
+
 function animate() {
     requestAnimationFrame(animate);
     if (brainModel) {
